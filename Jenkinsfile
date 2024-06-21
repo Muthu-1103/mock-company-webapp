@@ -2,17 +2,40 @@ pipeline {
     agent any
 
     stages {
-        stage('Build') {
+        stage('Checkout') {
             steps {
-                // TODO: Build step
-                sh './gradlew assemble'
+                checkout scm
             }
         }
+
+        stage('Build') {
+            steps {
+                script {
+                    // Replace with your build command
+                    sh './gradlew build'
+                }
+            }
+        }
+
         stage('Test') {
             steps {
-                // TODO: Test step
-                sh './gradlew test'
+                script {
+                    // Replace with your test command
+                    sh './gradlew test'
+                }
             }
+        }
+    }
+
+    post {
+        always {
+            junit '**/build/test-results/test/*.xml'
+            archiveArtifacts artifacts: '**/build/libs/*.jar', allowEmptyArchive: true
+        }
+        failure {
+            mail to: 'team@yourcompany.com',
+                 subject: "Build failed in Jenkins: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "Something is wrong with ${env.JOB_NAME} #${env.BUILD_NUMBER}. Please fix it."
         }
     }
 }
